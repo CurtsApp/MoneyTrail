@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>A D3 chart</title>
+    <title>Money Trail</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
           integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
@@ -9,14 +9,21 @@
     <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"
             integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw=="
             crossorigin=""></script>
+    <script src="dataServices.js"></script>
+    <script src="scripts.js"></script>
 
 </head>
 <body>
 <div id="mapid"></div>
+<div id="main">
+    <button type="button" onclick="testButton()">Test</button>
+    <input type="text" id="addressInput">
+    <p id="output">Test</p>
+</div>
 <script>
 
 
-    var mymap = L.map('mapid').setView([33.606197, -112.212950], 13);
+    var mymap = L.map('mapid').setView([33.606197, -112.212950], 10);
 
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiY3VydHNhcHAiLCJhIjoiY2pmOXd4aGh2MXJodTJ5bXp3MjRhNXJ1ciJ9._nJ-BmQ1K7O6sRLm20ct9Q', {
         maxZoom: 18,
