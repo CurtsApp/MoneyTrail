@@ -10,23 +10,19 @@ function testButton() {
 
 function loadCSV() {
     var file = document.getElementById("fileInput").files[0];
-    var output = document.getElementById("output");
 
     var fr = new FileReader();
     fr.onload = function(e) {
         var text = e.target.result;
-        console.log(text);
-        console.log("-------------------");
         var lines = text.split('\n');
-        console.log(lines);
         var cells = new Array();
         for(var i = 0; i < lines.length; i++) {
             cells.push(lines[i].split(','));
         }
-        console.log("-----------------------");
-        console.log(cells);
 
         financialData = formatFinancialData(cells);
+        applyGeoCodesForFinancialData();
+
     };
 
     fr.readAsText(file)
@@ -45,13 +41,10 @@ function formatFinancialData(data) {
         }
     }
 
-    console.log("amountCol: " + amountCol);
-    console.log("addressCol: " + addressCol);
-
     for(var i = 1; i < data.length; i++) {
-        var row = new Array();
+        var row = {};
         var address = data[i][addressCol];
-        var amount = data[i][amountCol];
+        var amount = parseFloat(data[i][amountCol]);
         address = address.split("  ")[0];
         if(amount < 0) {
             var wasDuplicate = false;
@@ -63,18 +56,27 @@ function formatFinancialData(data) {
             }
 
             if(!wasDuplicate) {
-                row.push(address);
-                row.push(amount);
+                row.address = address;
+                row.amount = amount;
                 formattedData.push(row);
             }
-
         }
-
     }
 
     console.log(formattedData);
     return formattedData;
+}
 
+function applyGeoCodesForFinancialData() {
+
+    for(let i = 0; i < financialData.length; i++) {
+        var geoCode = getCoordsFromAddress(financialData[i].address);
+        geoCode.then((json) => {
+            financialData[i].prettyAddress = json.results[0].formatted_address;
+            financialData[i].location = json.results[0].geometry.location;
+            console.log(financialData);
+        });
+    }
 }
 
 

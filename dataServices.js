@@ -10,8 +10,6 @@ function getCoordsFromAddress(address) {
     return fetch(url + "?address=" + formattedAddress + "&key=" + key)
         .then(function (res) {
             return res.json();
-        }).then(function (myJson) {
-            console.log(myJson);
         });
 }
 
