@@ -1,4 +1,24 @@
-var financialData;
+var financialData = {};
+var mymap = {};
+var allTransactions = {};
+var markers = new Array();
+function mapInit() {
+
+    mymap = L.map('mapid').setView([33.606197, -112.212950], 10);
+
+    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiY3VydHNhcHAiLCJhIjoiY2pmOXd4aGh2MXJodTJ5bXp3MjRhNXJ1ciJ9._nJ-BmQ1K7O6sRLm20ct9Q', {
+        maxZoom: 18,
+        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+        '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+        'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        id: 'mapbox.streets'
+    }).addTo(mymap);
+
+    markers.push(L.marker([33.606197, -112.212950]).addTo(mymap));
+
+
+
+}
 
 function testButton() {
     var input = document.getElementById("addressInput").value;
@@ -15,12 +35,12 @@ function loadCSV() {
     fr.onload = function(e) {
         var text = e.target.result;
         var lines = text.split('\n');
-        var cells = new Array();
+        allTransactions = new Array();
         for(var i = 0; i < lines.length; i++) {
-            cells.push(lines[i].split(','));
+            allTransactions.push(lines[i].split(','));
         }
 
-        financialData = formatFinancialData(cells);
+        financialData = formatFinancialData(allTransactions);
         applyGeoCodesForFinancialData();
 
     };
@@ -68,15 +88,39 @@ function formatFinancialData(data) {
 }
 
 function applyGeoCodesForFinancialData() {
-
+    var requests = new Array();
     for(let i = 0; i < financialData.length; i++) {
         var geoCode = getCoordsFromAddress(financialData[i].address);
         geoCode.then((json) => {
             financialData[i].prettyAddress = json.results[0].formatted_address;
             financialData[i].location = json.results[0].geometry.location;
-            console.log(financialData);
         });
+        requests.push(geoCode);
+    }
+    Promise.all(requests).then(() => {
+        // Change map view to look at the first item in list, this should put the map near the users data
+        setMapView(financialData[0].location.lat, financialData[0].location.lng);
+        markExpensesOnMap();
+    });
+}
+
+function markExpensesOnMap() {
+
+    // Remove all existing markers if there are any
+    for (var i = 0; i < markers.length; i++) {
+        mymap.removeLayer(markers[i]);
+    }
+
+    for(let i = 0;  i < financialData.length; i++) {
+        console.log("adding marker");
+        markers.push(L.marker([financialData[i].location.lat, financialData[i].location.lng]).addTo(mymap));
     }
 }
+
+function setMapView(lat, lng) {
+    mymap.setView([lat, lng], 10);
+}
+
+
 
 
