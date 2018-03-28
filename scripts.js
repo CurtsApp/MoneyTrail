@@ -2,6 +2,8 @@ var financialData = {};
 var mymap = {};
 var allTransactions = {};
 var markers = new Array();
+var validAddresses = 0;
+var uniqueAddresses = 0;
 function mapInit() {
 
     mymap = L.map('mapid').setView([33.606197, -112.212950], 10);
@@ -15,8 +17,6 @@ function mapInit() {
     }).addTo(mymap);
 
     markers.push(L.marker([33.606197, -112.212950]).addTo(mymap));
-
-
 
 }
 
@@ -79,6 +79,7 @@ function formatFinancialData(data) {
                 row.address = address;
                 row.amount = amount;
                 formattedData.push(row);
+                uniqueAddresses++;
             }
         }
     }
@@ -92,8 +93,12 @@ function applyGeoCodesForFinancialData() {
     for(let i = 0; i < financialData.length; i++) {
         var geoCode = getCoordsFromAddress(financialData[i].address);
         geoCode.then((json) => {
-            financialData[i].prettyAddress = json.results[0].formatted_address;
-            financialData[i].location = json.results[0].geometry.location;
+            if(json.results[0]) {
+                financialData[i].prettyAddress = json.results[0].formatted_address;
+                financialData[i].location = json.results[0].geometry.location;
+            }
+        }).catch((e) => {
+            console.log(e);
         });
         requests.push(geoCode);
     }
@@ -112,9 +117,15 @@ function markExpensesOnMap() {
     }
 
     for(let i = 0;  i < financialData.length; i++) {
-        console.log("adding marker");
-        markers.push(L.marker([financialData[i].location.lat, financialData[i].location.lng]).addTo(mymap));
+       if(financialData[i].location) {
+           markers.push(L.marker([financialData[i].location.lat, financialData[i].location.lng]).addTo(mymap));
+           validAddresses++;
+       }
     }
+
+    console.log("valid addresses: " + validAddresses);
+    console.log("unique addresses: " + uniqueAddresses);
+    console.log(financialData);
 }
 
 function setMapView(lat, lng) {
