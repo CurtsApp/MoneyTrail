@@ -22,14 +22,21 @@ function mapInit() {
 
 }
 
-function testButton() {
+function testGeoCode() {
     var input = document.getElementById("addressInput").value;
     var output = document.getElementById("output");
     console.log(input);
     console.log("Getting coords from address");
     //getCoordsFromAddress(input);
+    console.log("This test no longer works, this feature has been fully implmented");
+}
+
+function testBlueScale() {
+    var input = document.getElementById("blueScaleInput").value;
     console.log(mapPercentToBlueScale(input));
 }
+
+
 
 function loadCSV() {
     var file = document.getElementById("fileInput").files[0];

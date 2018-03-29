@@ -14,13 +14,29 @@
 
 </head>
 <body>
-<div id="mapid"></div>
-<div id="main">
-    <button type="button" onclick="testButton()">Test</button>
-    <input type="text" id="addressInput">
-    <p id="output">Test</p>
-    <input type="file" id="fileInput">
-    <button type="button" onclick="loadCSV()">Confirm CSV</button>
+
+<div class="main col">
+    <div class= "map" id="mapid"></div>
+    <div class="row">
+        <div class="group">
+            <button type="button" onclick="testGeoCode()">Test GeoCode</button>
+            <input type="text" id="addressInput">
+        </div>
+        <div class="group">
+            <button type="button" onclick="testBlueScale()">Test BlueScale</button>
+            <input type="text" id="blueScaleInput">
+        </div>
+    </div>
+
+    <div class="row group">
+        <input type="file" id="fileInput">
+        <button type="button" onclick="loadCSV()">Confirm CSV</button>
+    </div>
+
+    <div class="row group">
+        <p id="output"> A paragraph for jamming output data</p>
+    </div>
+
 </div>
 <script>
 mapInit();
