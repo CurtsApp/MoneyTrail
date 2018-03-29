@@ -27,7 +27,8 @@ function testButton() {
     var output = document.getElementById("output");
     console.log(input);
     console.log("Getting coords from address");
-    getCoordsFromAddress(input);
+    //getCoordsFromAddress(input);
+    console.log(mapPercentToBlueScale(input));
 }
 
 function loadCSV() {
@@ -169,6 +170,40 @@ function setMapView(lat, lng) {
     mymap.setView([lat, lng], 10);
 }
 
+function mapPercentToBlueScale (percent) {
+    let max = {red: 255, green: 51, blue: 51};
+    let min = {red: 51, green: 51, blue: 255};
+    let mid = {red: 51, green: 255, blue: 51};
+    percent = percent / 100;
+    if(percent <= .25) {
+        let sectionPercent = percentToRange(percent / .25, 51, 255);
+        return rgbToHex({red: 255, green: sectionPercent, blue: 255});
+    } else if(percent <= .5 ) {
+        let sectionPercent =  percentToRange( 1 - ((percent - .25) / .25), 51, 255)
+        return rgbToHex({red: 255, green: 255, blue: sectionPercent});
+    } else if(percent <= .75) {
+        let sectionPercent =  percentToRange( ((percent - .5) / .25), 51, 255)
+        return rgbToHex({red: sectionPercent, green: 255, blue: 51});
+    } else {
+        let sectionPercent =  percentToRange( 1 - ((percent - .75) / .25), 51, 255)
+        return rgbToHex({red: 255, green: sectionPercent, blue: 51});
+    }
+
+}
+
+function percentToRange(percent, min, max) {
+    return ((max - min) * percent) + min
+}
+function componentToHex(c) {
+    let hex = c.toString();
+    return hex.length == 1 ? "0" + hex : hex;
+}
+
+// rgb = {red: ##, green: ##, blue: ##}
+function rgbToHex(rgb) {
+    console.log(rgb);
+    return "#" + componentToHex(rgb.red) + componentToHex(rgb.green) + componentToHex(rgb.blue);
+}
 
 
 
