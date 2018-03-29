@@ -1,9 +1,11 @@
-var financialData = {};
-var mymap = {};
-var allTransactions = {};
-var markers = new Array();
-var validAddresses = 0;
-var uniqueAddresses = 0;
+let financialData = {};
+let mymap = {};
+let allTransactions = {};
+let markers = new Array();
+let validAddresses = 0;
+let uniqueAddresses = 0;
+
+
 function mapInit() {
 
     mymap = L.map('mapid').setView([33.606197, -112.212950], 10);
@@ -32,11 +34,11 @@ function loadCSV() {
     var file = document.getElementById("fileInput").files[0];
 
     var fr = new FileReader();
-    fr.onload = function(e) {
+    fr.onload = function (e) {
         var text = e.target.result;
         var lines = text.split('\n');
         allTransactions = new Array();
-        for(var i = 0; i < lines.length; i++) {
+        for (var i = 0; i < lines.length; i++) {
             allTransactions.push(lines[i].split(','));
         }
 
@@ -53,29 +55,29 @@ function formatFinancialData(data) {
     var amountCol;
     var addressCol;
 
-    for(var i = 0; i < data[0].length; i++) {
-        if(data[0][i] == "Amount") {
+    for (var i = 0; i < data[0].length; i++) {
+        if (data[0][i] == "Amount") {
             amountCol = i;
-        } else if(data[0][i] == "Description") {
+        } else if (data[0][i] == "Description") {
             addressCol = i;
         }
     }
 
-    for(var i = 1; i < data.length; i++) {
+    for (var i = 1; i < data.length; i++) {
         var row = {};
         var address = data[i][addressCol];
         var amount = parseFloat(data[i][amountCol]);
         address = address.split("  ")[0];
-        if(amount < 0) {
+        if (amount < 0) {
             var wasDuplicate = false;
-            for(var j = 0; j < formattedData.length; j++) {
-                if(formattedData[j][0] == address) {
+            for (var j = 0; j < formattedData.length; j++) {
+                if (formattedData[j][0] == address) {
                     formattedData[j][1] += amount;
                     wasDuplicate = true;
                 }
             }
 
-            if(!wasDuplicate) {
+            if (!wasDuplicate) {
                 row.address = address;
                 row.amount = amount;
                 formattedData.push(row);
@@ -90,10 +92,10 @@ function formatFinancialData(data) {
 
 function applyGeoCodesForFinancialData() {
     var requests = new Array();
-    for(let i = 0; i < financialData.length; i++) {
+    for (let i = 0; i < financialData.length; i++) {
         var geoCode = getCoordsFromAddress(financialData[i].address);
         geoCode.then((json) => {
-            if(json.results[0]) {
+            if (json.results[0]) {
                 financialData[i].prettyAddress = json.results[0].formatted_address;
                 financialData[i].location = json.results[0].geometry.location;
             }
@@ -110,17 +112,52 @@ function applyGeoCodesForFinancialData() {
 }
 
 function markExpensesOnMap() {
+    let amountTotal = 0;
+
+    for (let i = 0; i < financialData.length; i++) {
+    amountTotal += financialData[i].amount;
+    }
 
     // Remove all existing markers if there are any
-    for (var i = 0; i < markers.length; i++) {
+    for (let i = 0; i < markers.length; i++) {
         mymap.removeLayer(markers[i]);
     }
 
-    for(let i = 0;  i < financialData.length; i++) {
-       if(financialData[i].location) {
-           markers.push(L.marker([financialData[i].location.lat, financialData[i].location.lng]).addTo(mymap));
-           validAddresses++;
-       }
+    for (let i = 0; i < financialData.length; i++) {
+        if (financialData[i].location) {
+
+            // Change custom color based on amount
+
+            const myCustomColour = '#ffffff';
+
+            const markerHtmlStyles = `
+            background-color: ${myCustomColour};
+            width: 2rem;
+            height: 2rem;
+            display: block;
+            left: -1.5rem;
+            top: -1.5rem;
+            position: relative;
+            border-radius: 3rem 3rem 0;
+            transform: rotate(45deg);
+            border: 1px solid #FFFFFF`;
+
+            const icon = L.divIcon({
+                className: "my-custom-pin",
+                iconAnchor: [0, 24],
+                labelAnchor: [-6, 0],
+                popupAnchor: [0, -36],
+                html: `<span style="${markerHtmlStyles}" />`
+            });
+
+
+            var marker = L.marker([financialData[i].location.lat, financialData[i].location.lng], {icon: icon});
+
+
+            marker.addTo(mymap);
+            markers.push(marker);
+            validAddresses++;
+        }
     }
 
     console.log("valid addresses: " + validAddresses);
