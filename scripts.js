@@ -116,7 +116,7 @@ function markExpensesOnMap() {
     let amountTotal = 0;
 
     for (let i = 0; i < financialData.length; i++) {
-    amountTotal += financialData[i].amount;
+        amountTotal += financialData[i].amount;
     }
 
     // Remove all existing markers if there are any
@@ -129,7 +129,7 @@ function markExpensesOnMap() {
 
             // Change custom color based on amount
 
-            const myCustomColour = '#ffffff';
+            const myCustomColour = mapPercentToBlueScale(financialData[i].amount/amountTotal);
 
             const markerHtmlStyles = `
             background-color: ${myCustomColour};
@@ -170,32 +170,33 @@ function setMapView(lat, lng) {
     mymap.setView([lat, lng], 10);
 }
 
-function mapPercentToBlueScale (percent) {
+function mapPercentToBlueScale(percent) {
     let max = {red: 255, green: 51, blue: 51};
     let min = {red: 51, green: 51, blue: 255};
     let mid = {red: 51, green: 255, blue: 51};
-    percent = percent / 100;
-    if(percent <= .25) {
+
+    if (percent <= .25) {
         let sectionPercent = percentToRange(percent / .25, 51, 255);
-        return rgbToHex({red: 255, green: sectionPercent, blue: 255});
-    } else if(percent <= .5 ) {
-        let sectionPercent =  percentToRange( 1 - ((percent - .25) / .25), 51, 255)
-        return rgbToHex({red: 255, green: 255, blue: sectionPercent});
-    } else if(percent <= .75) {
-        let sectionPercent =  percentToRange( ((percent - .5) / .25), 51, 255)
+        return rgbToHex({red: 51, green: sectionPercent, blue: 255});
+    } else if (percent <= .5) {
+        let sectionPercent = percentToRange(1 - ((percent - .25) / .25), 51, 255)
+        return rgbToHex({red: 51, green: 255, blue: sectionPercent});
+    } else if (percent <= .75) {
+        let sectionPercent = percentToRange(((percent - .5) / .25), 51, 255)
         return rgbToHex({red: sectionPercent, green: 255, blue: 51});
     } else {
-        let sectionPercent =  percentToRange( 1 - ((percent - .75) / .25), 51, 255)
+        let sectionPercent = percentToRange(1 - ((percent - .75) / .25), 51, 255)
         return rgbToHex({red: 255, green: sectionPercent, blue: 51});
     }
 
 }
 
 function percentToRange(percent, min, max) {
-    return ((max - min) * percent) + min
+    return parseInt(((max - min) * percent) + min);
 }
+
 function componentToHex(c) {
-    let hex = c.toString();
+    let hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
 }
 
