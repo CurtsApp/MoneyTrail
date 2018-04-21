@@ -45,12 +45,12 @@ function loadCSV() {
     fr.onload = function (e) {
         var text = e.target.result;
         var lines = text.split('\n');
-        allTransactions = new Array();
+        let csvTransactions = new Array();
         for (var i = 0; i < lines.length; i++) {
-            allTransactions.push(lines[i].split(','));
+            csvTransactions.push(lines[i].split(','));
         }
 
-        financialData = formatFinancialData(allTransactions);
+        financialData = formatFinancialData(csvTransactions);
         applyGeoCodesForFinancialData();
 
     };
@@ -159,8 +159,15 @@ function markExpensesOnMap() {
             });
 
 
-            var marker = L.marker([financialData[i].location.lat, financialData[i].location.lng], {icon: icon});
+            let marker = L.marker([financialData[i].location.lat, financialData[i].location.lng], {icon: icon});
 
+            marker.on('mouseover', function(e) {
+                //open popup;
+                let popup = L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent('Address: ' + financialData[i].address + '\n' + 'Amount: ' + financialData[i].amount)
+                    .openOn(mymap);
+            });
 
             marker.addTo(mymap);
             markers.push(marker);
