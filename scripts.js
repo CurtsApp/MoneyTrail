@@ -136,8 +136,8 @@ function markExpensesOnMap() {
 
             // Change custom color based on amount
 
-            const myCustomColour = mapPercentToBlueScale(financialData[i].amount/amountTotal);
-
+            const myCustomColour = mapPercentToBlueScale(financialData[i].amount/-100);
+            console.log("color: " + myCustomColour);
             const markerHtmlStyles = `
             background-color: ${myCustomColour};
             width: 2rem;
@@ -186,14 +186,16 @@ function mapPercentToBlueScale(percent) {
         let sectionPercent = percentToRange(percent / .25, 51, 255);
         return rgbToHex({red: 51, green: sectionPercent, blue: 255});
     } else if (percent <= .5) {
-        let sectionPercent = percentToRange(1 - ((percent - .25) / .25), 51, 255)
+        let sectionPercent = percentToRange(1 - ((percent - .25) / .25), 51, 255);
         return rgbToHex({red: 51, green: 255, blue: sectionPercent});
     } else if (percent <= .75) {
-        let sectionPercent = percentToRange(((percent - .5) / .25), 51, 255)
+        let sectionPercent = percentToRange(((percent - .5) / .25), 51, 255);
         return rgbToHex({red: sectionPercent, green: 255, blue: 51});
-    } else {
-        let sectionPercent = percentToRange(1 - ((percent - .75) / .25), 51, 255)
+    } else if (percent <= 1) {
+        let sectionPercent = percentToRange(1 - ((percent - .75) / .25), 51, 255);
         return rgbToHex({red: 255, green: sectionPercent, blue: 51});
+    } else {
+        return rgbToHex({red: 255, green: 51, blue: 51});
     }
 
 }
