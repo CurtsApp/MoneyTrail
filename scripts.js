@@ -58,12 +58,13 @@ function loadCSV() {
     fr.readAsText(file)
 }
 
+// Sums all the total amounts for transactions at the same address
 function formatFinancialData(data) {
-    var formattedData = new Array();
-    var amountCol;
-    var addressCol;
+    let formattedData = new Array();
+    let amountCol;
+    let addressCol;
 
-    for (var i = 0; i < data[0].length; i++) {
+    for (let i = 0; i < data[0].length; i++) {
         if (data[0][i] == "Amount") {
             amountCol = i;
         } else if (data[0][i] == "Description") {
@@ -71,16 +72,16 @@ function formatFinancialData(data) {
         }
     }
 
-    for (var i = 1; i < data.length; i++) {
-        var row = {};
-        var address = data[i][addressCol];
-        var amount = parseFloat(data[i][amountCol]);
+    for (let i = 1; i < data.length; i++) {
+        let row = {};
+        let address = data[i][addressCol];
+        let amount = parseFloat(data[i][amountCol]);
         address = address.split("  ")[0];
         if (amount < 0) {
-            var wasDuplicate = false;
-            for (var j = 0; j < formattedData.length; j++) {
-                if (formattedData[j][0] == address) {
-                    formattedData[j][1] += amount;
+            let wasDuplicate = false;
+            for (let j = 0; j < formattedData.length; j++) {
+                if (formattedData[j].address == address) {
+                    formattedData[j].amount += amount;
                     wasDuplicate = true;
                 }
             }
@@ -94,6 +95,7 @@ function formatFinancialData(data) {
         }
     }
 
+    console.log("Formatted data: ");
     console.log(formattedData);
     return formattedData;
 }
@@ -218,7 +220,6 @@ function componentToHex(c) {
 
 // rgb = {red: ##, green: ##, blue: ##}
 function rgbToHex(rgb) {
-    console.log(rgb);
     return "#" + componentToHex(rgb.red) + componentToHex(rgb.green) + componentToHex(rgb.blue);
 }
 
