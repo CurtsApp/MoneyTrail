@@ -61,17 +61,10 @@ function loadCSV() {
 // Sums all the total amounts for transactions at the same address
 function formatFinancialData(data) {
     let formattedData = new Array();
-    let amountCol;
-    let addressCol;
+    let amountCol = getAmountColumnFromCSV(data);
+    let addressCol = getAddressColumnFromCSV(data);
 
-    for (let i = 0; i < data[0].length; i++) {
-        if (data[0][i] == "Amount") {
-            amountCol = i;
-        } else if (data[0][i] == "Description") {
-            addressCol = i;
-        }
-    }
-
+    // Aggregate transactions with the same address into lump amounts
     for (let i = 1; i < data.length; i++) {
         let row = {};
         let address = data[i][addressCol];
@@ -98,6 +91,28 @@ function formatFinancialData(data) {
     console.log("Formatted data: ");
     console.log(formattedData);
     return formattedData;
+}
+
+// Pass in CSV array String[][]
+function getAddressColumnFromCSV(data) {
+    for (let i = 0; i < data[0].length; i++) {
+        if (data[0][i] == "Description") {
+            return i;
+        }
+    }
+    console.log("Address Column could not be identified check CSV heading is 'Description' ");
+    return 0;
+}
+
+// Pass in CSV array String[][]
+function getAmountColumnFromCSV(data) {
+    for (let i = 0; i < data[0].length; i++) {
+        if (data[0][i] == "Amount") {
+            return i;
+        }
+    }
+    console.log("Amount Column could not be identified check CSV heading is 'Amount' ");
+    return 0;
 }
 
 function applyGeoCodesForFinancialData() {
