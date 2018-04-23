@@ -24,7 +24,6 @@ function mapInit() {
 
 function testGeoCode() {
     var input = document.getElementById("addressInput").value;
-    var output = document.getElementById("output");
     console.log(input);
     console.log("Getting coords from address");
     //getCoordsFromAddress(input);
@@ -53,8 +52,10 @@ function loadCSV() {
         financialData = formatFinancialData(csvTransactions);
         allTransactions = formatAllTransactions(csvTransactions);
 
-        getTransactionRelationships(allTransactions);
+        let relationshpips = getTransactionRelationships(allTransactions);
 
+        let outputText = printRelationships(.5, 2, relationshpips);
+        var outputField = document.getElementById("output").innerHTML = outputText;
         applyGeoCodesForFinancialData();
 
     };
@@ -365,9 +366,10 @@ function getTransactionRelationships(allTransactions) {
             row.primary.address = toNode.address;
             row.secondary.address = getNodeFromId(financialData, edges[j].to).address;
             row.probiblitiy = edges[j].edgeVal / toNode.totalVisits;
+            row.sampleSize = toNode.totalVisits;
 
             // Ignore self loops
-            if(row.primary.address != row.secondary.address && toNode.totalVisits > 2) {
+            if(row.primary.address != row.secondary.address) {
                 relationships.push(row);
             }
 
@@ -397,6 +399,18 @@ function getIdFromAddress(list, address) {
     }
     console.log("Attempting to get Id from address that doesn't exist");
     return financialData[0];
+}
+
+function printRelationships(minProbibility, minSampleSize, relationships) {
+    let relationshipText = "";
+    for(let i = 0; i < relationships.length; i++) {
+        if(relationships[i].probiblitiy > minProbibility && relationships[i].sampleSize > minSampleSize) {
+            let line =
+                `When going to "${relationships[i].primary.address}" you have a ${relationships[i].probiblitiy} % chance to also go to ${relationships[i].secondary.address}.\n`;
+            relationshipText += line;
+        }
+    }
+    return relationshipText;
 }
 
 
