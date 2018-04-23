@@ -4,6 +4,7 @@ let allTransactions = {};
 let markers = new Array();
 let validAddresses = 0;
 let uniqueAddresses = 0;
+let relationships = {};
 
 
 function mapInit() {
@@ -52,10 +53,9 @@ function loadCSV() {
         financialData = formatFinancialData(csvTransactions);
         allTransactions = formatAllTransactions(csvTransactions);
 
-        let relationshpips = getTransactionRelationships(allTransactions);
+        relationships = getTransactionRelationships(allTransactions);
+        updateRelationshipOutput();
 
-        let outputText = printRelationships(.5, 2, relationshpips);
-        var outputField = document.getElementById("output").innerHTML = outputText;
         applyGeoCodesForFinancialData();
 
     };
@@ -405,12 +405,39 @@ function printRelationships(minProbibility, minSampleSize, relationships) {
     let relationshipText = "";
     for(let i = 0; i < relationships.length; i++) {
         if(relationships[i].probiblitiy > minProbibility && relationships[i].sampleSize > minSampleSize) {
+            let probibility = (relationships[i].probiblitiy * 100).toFixed(2);
+
             let line =
-                `When going to "${relationships[i].primary.address}" you have a ${relationships[i].probiblitiy} % chance to also go to ${relationships[i].secondary.address}.\n`;
+                `When going to "${relationships[i].primary.address}" you have a ${probibility} % chance to also go to ${relationships[i].secondary.address}.<br>`;
             relationshipText += line;
         }
     }
     return relationshipText;
+}
+
+function updateRelationshipOutput() {
+    let probibilityInput = document.getElementById("probibilityInput").value;
+    let sampleSizeInput = document.getElementById("sampleSizeInput").value;
+    let minProbibility;
+    let minSampleSize;
+
+    if(probibilityInput == "") {
+        minProbibility = 0;
+    } else {
+        minProbibility = parseFloat(probibilityInput);
+    }
+
+    if(sampleSizeInput == "") {
+        minSampleSize = 0;
+    } else {
+        minSampleSize = parseInt(sampleSizeInput);
+    }
+
+
+    if(relationships != {}) {
+        let outputText = printRelationships(minProbibility, minSampleSize, relationships);
+        document.getElementById("output").innerHTML = outputText;
+    }
 }
 
 
