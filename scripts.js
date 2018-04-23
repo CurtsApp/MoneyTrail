@@ -99,6 +99,7 @@ function formatAllTransactions(data) {
     let amountCol = getAmountColumnFromCSV(data);
     let addressCol = getAddressColumnFromCSV(data);
     let dateCol = getDateColumnFromCSV(data);
+    let id = 0;
 
     // Start at 1 to skip header row
     for(let i = 1; i < data.length; i++) {
@@ -106,6 +107,8 @@ function formatAllTransactions(data) {
         row.address = data[i][addressCol];
         row.amount = data[i][amountCol];
         row.date = data[i][dateCol];
+        row.id = id;
+        id++;
         allTransactions.push(row);
     }
 
