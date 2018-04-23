@@ -29,3 +29,12 @@
 .item {
     padding: 5px;
 }
+
+.title{
+    display: flex;
+    align-items: right;
+    justify-content: right;
+    font-size: 50%;
+    font-family: "Trebuchet MS";
+
+}

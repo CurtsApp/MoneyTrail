@@ -296,15 +296,18 @@ function getTransactionRelationships(allTransactions) {
 
     let lastDate = "";
     for(let i = 0; i < allTransactions.length; i++) {
-        if(allTransactions[i].date == lastDate) {
-            // If still on the same day as the last transaction push this transaction onto the same day
-            allTransactionsByDay[allTransactionsByDay.length - 1].push(allTransactions[i]);
-        } else {
-            // If this is a new day push this transaction onto a new list of transactions
-            allTransactionsByDay.push(new Array());
-            allTransactionsByDay[allTransactionsByDay.length - 1].push(allTransactions[i]);
-            lastDate = allTransactions[i].date;
+        if(-1 != getIdFromAddress(financialData, allTransactions[i].address)) {
+            if(allTransactions[i].date == lastDate) {
+                // If still on the same day as the last transaction push this transaction onto the same day
+                allTransactionsByDay[allTransactionsByDay.length - 1].push(allTransactions[i]);
+            } else {
+                // If this is a new day push this transaction onto a new list of transactions
+                allTransactionsByDay.push(new Array());
+                allTransactionsByDay[allTransactionsByDay.length - 1].push(allTransactions[i]);
+                lastDate = allTransactions[i].date;
+            }
         }
+
     }
 
     for(let i = 0; i < allTransactionsByDay.length; i++) {
@@ -388,7 +391,7 @@ function getNodeFromId(list, id) {
         }
     }
     console.log("Attempting to get Node from id that doesn't exist");
-    return 0;
+    return -1;
 }
 
 function getIdFromAddress(list, address) {
@@ -398,7 +401,7 @@ function getIdFromAddress(list, address) {
         }
     }
     console.log("Attempting to get Id from address that doesn't exist");
-    return financialData[0];
+    return -1;
 }
 
 function printRelationships(minProbibility, minSampleSize, relationships) {
