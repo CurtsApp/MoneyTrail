@@ -52,6 +52,9 @@ function loadCSV() {
 
         financialData = formatFinancialData(csvTransactions);
         allTransactions = formatAllTransactions(csvTransactions);
+
+        getTransactionRelationships(allTransactions);
+
         applyGeoCodesForFinancialData();
 
     };
@@ -65,6 +68,7 @@ function formatFinancialData(data) {
     let amountCol = getAmountColumnFromCSV(data);
     let addressCol = getAddressColumnFromCSV(data);
 
+    let id = 0;
     // Aggregate transactions with the same address into lump amounts
     for (let i = 1; i < data.length; i++) {
         let row = {};
@@ -76,6 +80,7 @@ function formatFinancialData(data) {
             for (let j = 0; j < formattedData.length; j++) {
                 if (formattedData[j].address == address) {
                     formattedData[j].amount += amount;
+                    formattedData[j].totalVisits++;
                     wasDuplicate = true;
                 }
             }
@@ -83,6 +88,9 @@ function formatFinancialData(data) {
             if (!wasDuplicate) {
                 row.address = address;
                 row.amount = amount;
+                row.id = id;
+                row.totalVisits = 1;
+                id++;
                 formattedData.push(row);
                 uniqueAddresses++;
             }
@@ -104,7 +112,7 @@ function formatAllTransactions(data) {
     // Start at 1 to skip header row
     for(let i = 1; i < data.length; i++) {
         let row = {};
-        row.address = data[i][addressCol];
+        row.address = data[i][addressCol].split("  ")[0];
         row.amount = data[i][amountCol];
         row.date = data[i][dateCol];
         row.id = id;
@@ -276,5 +284,119 @@ function rgbToHex(rgb) {
     return "#" + componentToHex(rgb.red) + componentToHex(rgb.green) + componentToHex(rgb.blue);
 }
 
+
+// Return a list with the probiblity with locations that have an increased chance to happen at the same time
+// List format {primary: {address:String}, secondary: {address: String}, probility: double}[]
+// Assumes that transactions are ordered by date!!!!
+function getTransactionRelationships(allTransactions) {
+
+    let graph = newGraph(allTransactions.length);
+    let allTransactionsByDay = new Array();
+
+    let lastDate = "";
+    for(let i = 0; i < allTransactions.length; i++) {
+        if(allTransactions[i].date == lastDate) {
+            // If still on the same day as the last transaction push this transaction onto the same day
+            allTransactionsByDay[allTransactionsByDay.length - 1].push(allTransactions[i]);
+        } else {
+            // If this is a new day push this transaction onto a new list of transactions
+            allTransactionsByDay.push(new Array());
+            allTransactionsByDay[allTransactionsByDay.length - 1].push(allTransactions[i]);
+            lastDate = allTransactions[i].date;
+        }
+    }
+
+    for(let i = 0; i < allTransactionsByDay.length; i++) {
+        for(let j = 0; j < allTransactionsByDay[i].length; j++) {
+            for(let k = 0; k < allTransactionsByDay[i].length; k++) {
+                if(k != j) {
+                    addEdgeTransaction(graph, allTransactionsByDay[i][j], allTransactionsByDay[i][k]);
+                }
+            }
+        }
+    }
+
+    console.log("All Transaction By Day: ")
+    console.log(allTransactionsByDay);
+    console.log("Graph: ");
+    console.log(graph);
+
+    // We now have a graph that has all the individaul transactions with edges between the ones that happen on the same day
+    // We can now getOtherTransactionsFor item A that happened on day D.
+    // So we must get
+
+    // Now we make another graph. this graph will only have one node per address
+    // Then we increment the weight of edge for each connection between each place
+
+
+    let addressGraph = newGraph(financialData.length);
+
+    for(let i = 0; i < graph.length; i++) {
+        let edges = getAdj(graph, i);
+        let fromTransactionId = i;
+        let fromAddressId = getIdFromAddress(financialData, getNodeFromId(allTransactions, fromTransactionId).address);
+
+        for(let j = 0; j < edges.length; j++) {
+            let toTransactionId = edges[j].to;
+            let toAddressId = getIdFromAddress(financialData, getNodeFromId(allTransactions, toTransactionId).address);
+            incrementEdge(addressGraph, fromAddressId, toAddressId);
+        }
+    }
+
+    console.log("AddressGraph: ");
+    console.log(addressGraph);
+
+    // Now I have a graph that shows the number of times a purchase is made between location A and location B on the same day
+    // Get probility that if I go to A I will go to B
+    // The number of times that I went to A && B / times I went to A
+
+    // Return a list with the probiblity with locations that have an increased chance to happen at the same time
+    // List format {primary: {address:String}, secondary: {address: String}, probility: double}[]
+    let relationships = new Array();
+
+    // Loop through each location
+    for(let i = 0; i < addressGraph.length; i++) {
+        let edges = getAdj(addressGraph, i);
+        for(let j = 0; j < edges.length; j++) {
+            let row = {};
+            row.primary = {};
+            row.secondary = {};
+            let toNode = getNodeFromId(financialData, i);
+            row.primary.address = toNode.address;
+            row.secondary.address = getNodeFromId(financialData, edges[j].to).address;
+            row.probiblitiy = edges[j].edgeVal / toNode.totalVisits;
+
+            // Ignore self loops
+            if(row.primary.address != row.secondary.address && toNode.totalVisits > 2) {
+                relationships.push(row);
+            }
+
+        }
+    }
+
+    console.log("Relationships:");
+    console.log(relationships)
+    return relationships;
+}
+
+function getNodeFromId(list, id) {
+    for (let i = 0; i < list.length; i++) {
+        if(list[i].id == id) {
+            return list[i];
+        }
+    }
+    console.log("Attempting to get Node from id that doesn't exist");
+    return 0;
+}
+
+function getIdFromAddress(list, address) {
+    for(let i = 0; i < list.length; i++) {
+        if(list[i].address == address) {
+            return list[i].id;
+        }
+    }
+    console.log("Attempting to get Id from address that doesn't exist");
+    return financialData[0];
+}
 
 

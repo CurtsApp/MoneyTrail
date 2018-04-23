@@ -4,7 +4,9 @@
 function getAdj(graph, index) {
     let adj = new Array();
     for(let i = 0; i < graph[index].length; i++) {
-        adj.push(graph[index][i]);
+        if(graph[index][i] > 0) {
+            adj.push({to: i, edgeVal: graph[index][i]});
+        }
     }
     return adj;
 }
@@ -21,7 +23,7 @@ function newGraph(size) {
 
     for(let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
-            graph[i].push(false);
+            graph[i].push(0);
         }
     }
 
@@ -30,11 +32,23 @@ function newGraph(size) {
 
 function addEdge(graph, from, to) {
     if(from < graph.length && to < graph[from].length) {
-        graph[from][to] = true;
+        graph[from][to] = 1;
     } else {
         console.log("Attempting to add out of bounds edge")
     }
+}
 
+function incrementEdge(graph, from, to) {
+    if(from < graph.length && to < graph[from].length) {
+        graph[from][to] += 1;
+    } else {
+        console.log("Attempting to increment out of bounds edge")
+    }
+}
+
+// Pass in the {address: String, amount: double, id: int} for node
+function incrementEdgeTransaction(graph, fromNode, toNode) {
+    incrementEdge(graph, fromNode.id, toNode.id);
 }
 
 function removeEdge(graph, from, to) {
