@@ -51,6 +51,7 @@ function loadCSV() {
         }
 
         financialData = formatFinancialData(csvTransactions);
+        allTransactions = formatAllTransactions(csvTransactions);
         applyGeoCodesForFinancialData();
 
     };
@@ -93,6 +94,29 @@ function formatFinancialData(data) {
     return formattedData;
 }
 
+function formatAllTransactions(data) {
+    let allTransactions = new Array();
+    let amountCol = getAmountColumnFromCSV(data);
+    let addressCol = getAddressColumnFromCSV(data);
+    let dateCol = getDateColumnFromCSV(data);
+
+    // Start at 1 to skip header row
+    for(let i = 1; i < data.length; i++) {
+        let row = {};
+        row.address = data[i][addressCol];
+        row.amount = data[i][amountCol];
+        row.date = data[i][dateCol];
+        allTransactions.push(row);
+    }
+
+    console.log("All transcations");
+    console.log(allTransactions);
+    return allTransactions;
+
+
+
+}
+
 // Pass in CSV array String[][]
 function getAddressColumnFromCSV(data) {
     for (let i = 0; i < data[0].length; i++) {
@@ -112,6 +136,17 @@ function getAmountColumnFromCSV(data) {
         }
     }
     console.log("Amount Column could not be identified check CSV heading is 'Amount' ");
+    return 0;
+}
+
+// Pass in CSV array String[][]
+function getDateColumnFromCSV(data) {
+    for (let i = 0; i < data[0].length; i++) {
+        if (data[0][i] == "Posting Date") {
+            return i;
+        }
+    }
+    console.log("Date Column could not be identified check CSV heading is 'Posting Date' ");
     return 0;
 }
 
