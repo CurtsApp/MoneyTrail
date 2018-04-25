@@ -37,7 +37,6 @@ function testBlueScale() {
 }
 
 
-
 function loadCSV() {
     var file = document.getElementById("fileInput").files[0];
 
@@ -74,27 +73,33 @@ function formatFinancialData(data) {
     for (let i = 1; i < data.length; i++) {
         let row = {};
         let address = data[i][addressCol];
-        let amount = parseFloat(data[i][amountCol]);
-        address = address.split("  ")[0];
-        if (amount < 0) {
-            let wasDuplicate = false;
-            for (let j = 0; j < formattedData.length; j++) {
-                if (formattedData[j].address == address) {
-                    formattedData[j].amount += amount;
-                    formattedData[j].totalVisits++;
-                    wasDuplicate = true;
+        console.log(address);
+        if (address != null) {
+            let amount = parseFloat(data[i][amountCol]);
+            address = address.split("  ")[0];
+            if (amount < 0) {
+                let wasDuplicate = false;
+                for (let j = 0; j < formattedData.length; j++) {
+                    if (formattedData[j].address == address) {
+                        formattedData[j].amount += amount;
+                        formattedData[j].totalVisits++;
+                        wasDuplicate = true;
+                    }
+                }
+
+                if (!wasDuplicate) {
+                    row.address = address;
+                    row.amount = amount;
+                    row.id = id;
+                    row.totalVisits = 1;
+                    id++;
+                    formattedData.push(row);
+                    uniqueAddresses++;
                 }
             }
 
-            if (!wasDuplicate) {
-                row.address = address;
-                row.amount = amount;
-                row.id = id;
-                row.totalVisits = 1;
-                id++;
-                formattedData.push(row);
-                uniqueAddresses++;
-            }
+        } else {
+            console.log("Address was null: " + i);
         }
     }
 
@@ -111,20 +116,23 @@ function formatAllTransactions(data) {
     let id = 0;
 
     // Start at 1 to skip header row
-    for(let i = 1; i < data.length; i++) {
+    for (let i = 1; i < data.length; i++) {
         let row = {};
-        row.address = data[i][addressCol].split("  ")[0];
-        row.amount = data[i][amountCol];
-        row.date = data[i][dateCol];
-        row.id = id;
-        id++;
-        allTransactions.push(row);
+        let address = data[i][addressCol];
+        if(address != null) {
+            row.address = address.split("  ")[0];
+            row.amount = data[i][amountCol];
+            row.date = data[i][dateCol];
+            row.id = id;
+            id++;
+            allTransactions.push(row);
+        }
+
     }
 
     console.log("All transcations");
     console.log(allTransactions);
     return allTransactions;
-
 
 
 }
@@ -200,7 +208,7 @@ function markExpensesOnMap() {
 
             // Change custom color based on amount
 
-            const myCustomColour = mapPercentToBlueScale(financialData[i].amount/-100);
+            const myCustomColour = mapPercentToBlueScale(financialData[i].amount / -100);
             console.log("color: " + myCustomColour);
             const markerHtmlStyles = `
             background-color: ${myCustomColour};
@@ -225,7 +233,7 @@ function markExpensesOnMap() {
 
             let marker = L.marker([financialData[i].location.lat, financialData[i].location.lng], {icon: icon});
 
-            marker.on('mouseover', function(e) {
+            marker.on('mouseover', function (e) {
                 //open popup;
                 let popup = L.popup()
                     .setLatLng(e.latlng)
@@ -295,9 +303,9 @@ function getTransactionRelationships(allTransactions) {
     let allTransactionsByDay = new Array();
 
     let lastDate = "";
-    for(let i = 0; i < allTransactions.length; i++) {
-        if(-1 != getIdFromAddress(financialData, allTransactions[i].address)) {
-            if(allTransactions[i].date == lastDate) {
+    for (let i = 0; i < allTransactions.length; i++) {
+        if (-1 != getIdFromAddress(financialData, allTransactions[i].address)) {
+            if (allTransactions[i].date == lastDate) {
                 // If still on the same day as the last transaction push this transaction onto the same day
                 allTransactionsByDay[allTransactionsByDay.length - 1].push(allTransactions[i]);
             } else {
@@ -310,10 +318,10 @@ function getTransactionRelationships(allTransactions) {
 
     }
 
-    for(let i = 0; i < allTransactionsByDay.length; i++) {
-        for(let j = 0; j < allTransactionsByDay[i].length; j++) {
-            for(let k = 0; k < allTransactionsByDay[i].length; k++) {
-                if(k != j) {
+    for (let i = 0; i < allTransactionsByDay.length; i++) {
+        for (let j = 0; j < allTransactionsByDay[i].length; j++) {
+            for (let k = 0; k < allTransactionsByDay[i].length; k++) {
+                if (k != j) {
                     addEdgeTransaction(graph, allTransactionsByDay[i][j], allTransactionsByDay[i][k]);
                 }
             }
@@ -335,12 +343,12 @@ function getTransactionRelationships(allTransactions) {
 
     let addressGraph = newGraph(financialData.length);
 
-    for(let i = 0; i < graph.length; i++) {
+    for (let i = 0; i < graph.length; i++) {
         let edges = getAdj(graph, i);
         let fromTransactionId = i;
         let fromAddressId = getIdFromAddress(financialData, getNodeFromId(allTransactions, fromTransactionId).address);
 
-        for(let j = 0; j < edges.length; j++) {
+        for (let j = 0; j < edges.length; j++) {
             let toTransactionId = edges[j].to;
             let toAddressId = getIdFromAddress(financialData, getNodeFromId(allTransactions, toTransactionId).address);
             incrementEdge(addressGraph, fromAddressId, toAddressId);
@@ -359,9 +367,9 @@ function getTransactionRelationships(allTransactions) {
     let relationships = new Array();
 
     // Loop through each location
-    for(let i = 0; i < addressGraph.length; i++) {
+    for (let i = 0; i < addressGraph.length; i++) {
         let edges = getAdj(addressGraph, i);
-        for(let j = 0; j < edges.length; j++) {
+        for (let j = 0; j < edges.length; j++) {
             let row = {};
             row.primary = {};
             row.secondary = {};
@@ -372,7 +380,7 @@ function getTransactionRelationships(allTransactions) {
             row.sampleSize = toNode.totalVisits;
 
             // Ignore self loops
-            if(row.primary.address != row.secondary.address) {
+            if (row.primary.address != row.secondary.address) {
                 relationships.push(row);
             }
 
@@ -386,7 +394,7 @@ function getTransactionRelationships(allTransactions) {
 
 function getNodeFromId(list, id) {
     for (let i = 0; i < list.length; i++) {
-        if(list[i].id == id) {
+        if (list[i].id == id) {
             return list[i];
         }
     }
@@ -395,8 +403,8 @@ function getNodeFromId(list, id) {
 }
 
 function getIdFromAddress(list, address) {
-    for(let i = 0; i < list.length; i++) {
-        if(list[i].address == address) {
+    for (let i = 0; i < list.length; i++) {
+        if (list[i].address == address) {
             return list[i].id;
         }
     }
@@ -406,8 +414,8 @@ function getIdFromAddress(list, address) {
 
 function printRelationships(minProbibility, minSampleSize, relationships) {
     let relationshipText = "";
-    for(let i = 0; i < relationships.length; i++) {
-        if(relationships[i].probiblitiy > minProbibility && relationships[i].sampleSize > minSampleSize) {
+    for (let i = 0; i < relationships.length; i++) {
+        if (relationships[i].probiblitiy > minProbibility && relationships[i].sampleSize > minSampleSize) {
             let probibility = (relationships[i].probiblitiy * 100).toFixed(2);
 
             let line =
@@ -424,20 +432,20 @@ function updateRelationshipOutput() {
     let minProbibility;
     let minSampleSize;
 
-    if(probibilityInput == "") {
+    if (probibilityInput == "") {
         minProbibility = 0;
     } else {
         minProbibility = parseFloat(probibilityInput);
     }
 
-    if(sampleSizeInput == "") {
+    if (sampleSizeInput == "") {
         minSampleSize = 0;
     } else {
         minSampleSize = parseInt(sampleSizeInput);
     }
 
 
-    if(relationships != {}) {
+    if (relationships != {}) {
         let outputText = printRelationships(minProbibility, minSampleSize, relationships);
         document.getElementById("output").innerHTML = outputText;
     }
