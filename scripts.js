@@ -21,6 +21,20 @@ function mapInit() {
 
     markers.push(L.marker([33.606197, -112.212950]).addTo(mymap));
 
+    let legend = L.control({position: 'bottomright'});
+
+    legend.onAdd = function (map) {
+
+        let div = L.DomUtil.create('div', 'info legend');
+
+
+        div.innerHTML = "<img src=colorLegend.png class=legend>";
+
+        return div;
+    };
+
+    legend.addTo(mymap);
+
 }
 
 function testGeoCode() {
