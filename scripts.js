@@ -68,6 +68,7 @@ function loadCSV() {
 
         relationships = getTransactionRelationships(allTransactions);
         updateRelationshipOutput();
+        updateSpendingAnalysis();
 
         applyGeoCodesForFinancialData();
 
@@ -389,9 +390,12 @@ function getTransactionRelationships(allTransactions) {
             row.secondary = {};
             let toNode = getNodeFromId(financialData, i);
             row.primary.address = toNode.address;
-            row.secondary.address = getNodeFromId(financialData, edges[j].to).address;
+            let fromNode =getNodeFromId(financialData, edges[j].to);
+            row.secondary.address = fromNode.address;
             row.probiblitiy = edges[j].edgeVal / toNode.totalVisits;
             row.sampleSize = toNode.totalVisits;
+            row.primary.amount = toNode.amount;
+            row.secondary.amount = fromNode.amount;
 
             // Ignore self loops
             if (row.primary.address != row.secondary.address) {
@@ -462,6 +466,42 @@ function updateRelationshipOutput() {
     if (relationships != {}) {
         let outputText = printRelationships(minProbibility, minSampleSize, relationships);
         document.getElementById("output").innerHTML = outputText;
+    }
+}
+
+function updateSpendingAnalysis() {
+    let sampleSizeWeight = 1;
+    let percentageWeight = 2;
+    let amountWieght = 0.00001;
+
+    if(relationships != {}) {
+        let maxWeight = 0;
+        let greatestWeightedIndex = null;
+        for(let i = 0; i < relationships.length; i++) {
+            let weight = relationships[i].probiblitiy * percentageWeight + relationships[i].sampleSize * sampleSizeWeight + (relationships[i].secondary.amount * amountWieght * -1);
+            if(weight > maxWeight) {
+                if(relationships[i].sampleSize > 1 && relationships[i].probiblitiy > .5) {
+                    greatestWeightedIndex = i;
+                    maxWeight = weight;
+                }
+            }
+        }
+
+        let outputArea = document.getElementById("analysisOutput");
+        if(greatestWeightedIndex != null) {
+            let primaryLocation = relationships[greatestWeightedIndex].primary.address;
+            let secondaryLocation = relationships[greatestWeightedIndex].secondary.address;
+            let amountSaved = relationships[greatestWeightedIndex].secondary.amount;
+
+            // Format the amount
+            amountSaved = -1 * amountSaved.toFixed(2);
+            amountSaved = "$" + amountSaved;
+
+
+            outputArea.innerHTML = "You should avoid going to " + primaryLocation + ". This will save you " + amountSaved + " at " + secondaryLocation + ".";
+        } else {
+            outputArea.innerText = "There were no meaningful relationships identified in your transaction history."
+        }
     }
 }
 
