@@ -17,30 +17,58 @@
 <body>
 
 <div class="main col">
-    <div class= "map" id="mapid"></div>
+    <div class="map" id="mapid"></div>
+
+    <hr>
+
+
+    <div class="row group">
+        <h2>Transaction History CSV Upload</h2>
+    </div>
+    <div class="row">
+        <div class="group">
+            <input type="file" id="fileInput">
+            <button type="button" onclick="loadCSV()">Confirm CSV</button>
+        </div>
+
+    </div>
+
+
+    <hr>
+
+    <div class="row group">
+        <h2>Analysis</h2>
+    </div>
+    <div class="row group">
+        <p id="analysisOutput">Upload your transaction history for a recommendation on how to decrease spending.</p>
+    </div>
+
+    <hr>
+
+    <div class="row group">
+        <h2>Advanced Relationship Filters</h2>
+    </div>
     <div class="row">
         <div class="group">
             <button type="button" onclick="updateRelationshipOutput()">Min Sample Size</button>
             <input type="text" id="sampleSizeInput">
         </div>
         <div class="group">
-            <button type="button" onclick="updateRelationshipOutput()">Min Probibility</button>
+            <button type="button" onclick="updateRelationshipOutput()">Min Probability</button>
             <input type="text" id="probibilityInput">
         </div>
     </div>
-
-    <div class="row group">
-        <input type="file" id="fileInput">
-        <button type="button" onclick="loadCSV()">Confirm CSV</button>
+    <div class="row">
+        <div class="group">
+            <p id="output"> Transaction relationships will be displayed here.</p>
+        </div>
     </div>
 
-    <div class="row group">
-        <p id="output"> Transaction relationships will be displayed here.</p>
-    </div>
+    <hr>
 
 </div>
 <script>
-mapInit();
+    mapInit();
 </script>
 </body>
 </html>
